@@ -1,0 +1,15 @@
+{
+  "mode": "cloud",
+  "device_ip": null,
+  "device_id": "REPLACE_ME",
+  "sku": "H6004",
+  "api_key_path": "REPLACE_ME",
+  "flash_period_seconds": 6.0,
+  "colors": {
+    "yellow": "#FFFF00",
+    "red":    "#FF0000",
+    "blue":   "#0000FF",
+    "aqua":   "#00FFFF",
+    "white":  "#FFFFFF"
+  }
+}
