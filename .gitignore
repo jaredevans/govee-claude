@@ -1,6 +1,19 @@
+# Python
 __pycache__/
 *.py[cod]
 .venv/
 .pytest_cache/
 *.egg-info/
 .coverage
+
+# macOS
+.DS_Store
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Secrets — never commit
+govee-api-key.txt
