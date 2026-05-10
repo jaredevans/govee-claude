@@ -1,0 +1,5 @@
+{
+  "name": "govee-claude",
+  "version": "0.1.0",
+  "description": "Drives a Govee H6004 bulb as a status indicator for Claude Code (yellow on Stop, red on Notification, white on SessionEnd, blue/aqua breathe while working)."
+}
