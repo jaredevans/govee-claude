@@ -2,7 +2,7 @@
 
 A Claude Code plugin that drives a Govee H6004 smart bulb as a status indicator.
 
-- **Working** (between `UserPromptSubmit` and `Stop`): bulb breathes blue ↔ aqua
+- **Working** (between `UserPromptSubmit` and `Stop`): solid blue
 - **Idle / done** (`Stop`): solid yellow
 - **Needs attention** (`Notification`): solid red
 - **Session ended** (`SessionEnd`): solid white
@@ -43,8 +43,8 @@ See [`docs/superpowers/specs/2026-05-09-govee-claude-plugin-design.md`](docs/sup
 
 ```bash
 uv sync                                      # set up venv
-uv run pytest                                # unit tests
-uv run pytest -m integration                 # plus integration tests
+uv run pytest                                # unit tests (integration skipped by default)
+uv run pytest -m integration                 # integration tests only
 ```
 
 ## Manual test
