@@ -17,4 +17,4 @@ testpaths = ["tests"]
 markers = [
     "integration: opt-in tests using real sockets/subprocesses",
 ]
-addopts = "-m 'not integration'"
+addopts = "-m 'not integration' --basetemp=/tmp/pytest-govee"

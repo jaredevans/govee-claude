@@ -1,7 +1,11 @@
 from __future__ import annotations
 
 import logging
+import os
+import socket as _socket
+import stat
 import threading
+from pathlib import Path
 from typing import Protocol
 
 
@@ -76,3 +80,64 @@ class Daemon:
             self.client.set_rgb(rgb)
         except Exception:
             log.exception("set_rgb failed (rgb=0x%06X)", rgb)
+
+
+class SocketServer:
+    """AF_UNIX server that serializes commands to a Daemon."""
+
+    def __init__(self, *, daemon: Daemon, sock_path: Path) -> None:
+        self.daemon = daemon
+        self.sock_path = Path(sock_path)
+        self._server: _socket.socket | None = None
+        self._stop = threading.Event()
+
+    def _bind(self) -> _socket.socket:
+        if self.sock_path.exists():
+            try:
+                if stat.S_ISSOCK(self.sock_path.stat().st_mode):
+                    self.sock_path.unlink()
+                else:
+                    self.sock_path.unlink()
+            except FileNotFoundError:
+                pass
+        self.sock_path.parent.mkdir(parents=True, exist_ok=True)
+        srv = _socket.socket(_socket.AF_UNIX, _socket.SOCK_STREAM)
+        srv.bind(str(self.sock_path))
+        os.chmod(self.sock_path, 0o600)
+        srv.listen(8)
+        srv.settimeout(0.2)
+        return srv
+
+    def serve_forever(self) -> None:
+        self._server = self._bind()
+        try:
+            while not self._stop.is_set():
+                try:
+                    conn, _ = self._server.accept()
+                except _socket.timeout:
+                    continue
+                with conn:
+                    self._handle_conn(conn)
+        finally:
+            self._server.close()
+            self._server = None
+            try:
+                self.sock_path.unlink()
+            except FileNotFoundError:
+                pass
+
+    def _handle_conn(self, conn: _socket.socket) -> None:
+        conn.settimeout(2.0)
+        try:
+            data = conn.recv(64)
+        except _socket.timeout:
+            return
+        cmd = data.decode(errors="replace").strip()
+        reply = self.daemon.handle(cmd)
+        try:
+            conn.sendall((reply + "\n").encode())
+        except OSError:
+            log.warning("client closed before ack")
+
+    def shutdown(self) -> None:
+        self._stop.set()
