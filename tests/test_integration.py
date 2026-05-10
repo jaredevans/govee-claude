@@ -20,10 +20,9 @@ def _write_config(rt: Path):
         "device_id": "DE:AD",
         "sku": "H6004",
         "api_key_path": str(rt / "fake-key.txt"),
-        "flash_period_seconds": 0.05,
         "colors": {
             "yellow": "#FFFF00", "red": "#FF0000",
-            "blue": "#0000FF", "aqua": "#00FFFF", "white": "#FFFFFF",
+            "blue": "#0000FF", "white": "#FFFFFF",
         },
     }
     (rt / "config.json").write_text(json.dumps(cfg))
@@ -54,7 +53,7 @@ def test_full_session_flow(tmp_path):
             assert r.returncode == 0
 
         send("flash")
-        time.sleep(0.25)  # let it breathe a few times
+        time.sleep(0.05)
         send("yellow")
         time.sleep(0.05)
         send("red")
@@ -64,11 +63,7 @@ def test_full_session_flow(tmp_path):
 
         lines = [json.loads(l) for l in rec.read_text().splitlines()]
         rgbs = [e["rgb"] for e in lines]
-        assert 0x0000FF in rgbs and 0x00FFFF in rgbs   # flash emitted
-        # Yellow happened after flash and was the first solid set after flashing.
-        # Red and white follow.
-        assert rgbs[-1] == 0xFFFFFF
-        assert 0xFFFF00 in rgbs and 0xFF0000 in rgbs
+        assert rgbs == [0x0000FF, 0xFFFF00, 0xFF0000, 0xFFFFFF]
     finally:
         subprocess.run([sys.executable, str(SEND_PATH), "quit"], env=env, timeout=3)
         try:

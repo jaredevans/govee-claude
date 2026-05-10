@@ -67,11 +67,51 @@ def test_send_yellow_reaches_daemon(tmp_path):
     assert log == ["yellow"]
 
 
+def _noop_daemon_cmd(tmp_path: Path) -> Path:
+    script = tmp_path / "noop_daemon.sh"
+    script.write_text("#!/bin/sh\nexit 0\n")
+    script.chmod(0o755)
+    return script
+
+
 @pytest.mark.integration
 def test_send_writes_last_command_when_daemon_absent(tmp_path):
-    r = run_send(["yellow"], tmp_path)
+    env = os.environ.copy()
+    env["GOVEE_CLAUDE_RUNTIME_DIR"] = str(tmp_path)
+    env["GOVEE_CLAUDE_DAEMON_CMD"] = str(_noop_daemon_cmd(tmp_path))
+    r = subprocess.run(
+        [sys.executable, str(SEND_PATH), "yellow"],
+        env=env, capture_output=True, text=True, timeout=5,
+    )
     assert r.returncode == 0  # never break Claude
     assert (tmp_path / "last_command").read_text().strip() == "yellow"
+
+
+@pytest.mark.integration
+def test_send_self_heals_by_spawning_daemon_when_absent(tmp_path):
+    """A non-ensure-running command must also spawn the daemon when the
+    socket is unreachable, so a crashed/missing daemon recovers without
+    waiting for the next SessionStart."""
+    runtime = tmp_path
+    spawn_marker = tmp_path / "spawned.log"
+    spawn_script = tmp_path / "fake_daemon.sh"
+    spawn_script.write_text(f'#!/bin/sh\necho started >> "{spawn_marker}"\nsleep 0.5\n')
+    spawn_script.chmod(0o755)
+
+    env = os.environ.copy()
+    env["GOVEE_CLAUDE_RUNTIME_DIR"] = str(runtime)
+    env["GOVEE_CLAUDE_DAEMON_CMD"] = str(spawn_script)
+    r = subprocess.run(
+        [sys.executable, str(SEND_PATH), "yellow"],
+        env=env, capture_output=True, text=True, timeout=5,
+    )
+    assert r.returncode == 0
+    assert (runtime / "last_command").read_text().strip() == "yellow"
+
+    deadline = time.time() + 2
+    while time.time() < deadline and not spawn_marker.exists():
+        time.sleep(0.05)
+    assert spawn_marker.exists(), "send.py did not spawn the daemon on send failure"
 
 
 @pytest.mark.integration

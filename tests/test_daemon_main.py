@@ -19,12 +19,10 @@ def write_config(runtime_dir: Path, sku="H6004", device_id="DE:AD:BE:EF:CA:FE:00
         "device_id": device_id,
         "sku": sku,
         "api_key_path": str(runtime_dir / "fake-key.txt"),
-        "flash_period_seconds": 0.01,
         "colors": {
             "yellow": "#FFFF00",
             "red": "#FF0000",
             "blue": "#0000FF",
-            "aqua": "#00FFFF",
             "white": "#FFFFFF",
         },
     }

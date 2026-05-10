@@ -14,7 +14,6 @@ COLORS = {
     "red":    0xFF0000,
     "white":  0xFFFFFF,
     "blue":   0x0000FF,
-    "aqua":   0x00FFFF,
 }
 
 
@@ -31,7 +30,7 @@ def send(sock_path: Path, msg: str) -> str:
 @pytest.fixture
 def server_setup(tmp_path):
     sock = tmp_path / "daemon.sock"
-    daemon = Daemon(client=FakeBulbClient(), period_seconds=0.01, colors=COLORS)
+    daemon = Daemon(client=FakeBulbClient(), colors=COLORS)
     server = SocketServer(daemon=daemon, sock_path=sock)
     t = threading.Thread(target=server.serve_forever, daemon=True)
     t.start()
@@ -66,7 +65,7 @@ def test_server_stops_cleanly(server_setup):
 def test_server_removes_stale_socket_on_start(tmp_path):
     sock = tmp_path / "daemon.sock"
     sock.write_text("stale")  # simulate stale file
-    daemon = Daemon(client=FakeBulbClient(), period_seconds=0.01, colors=COLORS)
+    daemon = Daemon(client=FakeBulbClient(), colors=COLORS)
     server = SocketServer(daemon=daemon, sock_path=sock)
     t = threading.Thread(target=server.serve_forever, daemon=True)
     t.start()

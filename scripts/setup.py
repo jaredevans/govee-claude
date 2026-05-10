@@ -119,19 +119,16 @@ def validate_cloud(api_key: str, sku: str, device_id: str, *,
 
 def write_config(path: Path, *, mode: str, device_ip: str | None,
                  device_id: str, sku: str, api_key_path: str) -> None:
-    period = 1.0 if mode == "lan" else 6.0
     cfg = {
         "mode": mode,
         "device_ip": device_ip,
         "device_id": device_id,
         "sku": sku,
         "api_key_path": api_key_path,
-        "flash_period_seconds": period,
         "colors": {
             "yellow": "#FFFF00",
             "red":    "#FF0000",
             "blue":   "#0000FF",
-            "aqua":   "#00FFFF",
             "white":  "#FFFFFF",
         },
     }

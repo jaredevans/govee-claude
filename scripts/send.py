@@ -85,9 +85,12 @@ def main(argv: list[str]) -> int:
 
         if try_send(sock, cmd):
             return 0
-        # Daemon not reachable — buffer the desired state.
+        # Daemon not reachable — buffer the desired state and spawn a fresh
+        # daemon so it picks up last_command on startup. Singleton flock makes
+        # a redundant spawn harmless if one is already (re)starting.
         rt.mkdir(parents=True, exist_ok=True)
         (rt / "last_command").write_text(cmd)
+        spawn_daemon(rt)
         return 0
     except Exception:
         hook_log(rt, "send.py error:\n" + traceback.format_exc())
