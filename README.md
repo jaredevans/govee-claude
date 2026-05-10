@@ -39,6 +39,10 @@ Setup will run UDP discovery on your primary `/24` and fall back to cloud if no 
 
 See [`docs/superpowers/specs/2026-05-09-govee-claude-plugin-design.md`](docs/superpowers/specs/2026-05-09-govee-claude-plugin-design.md).
 
+## Multiple Claude sessions
+
+The daemon is a per-user singleton (enforced by an `flock` on `~/.claude/govee-claude/daemon.pid`), so multiple Claude Code sessions on the same machine share one daemon and one bulb. Concurrent commands are serialized by the daemon's accept loop, but bulb state is **not** scoped per session — whichever session's hook fired most recently wins. If one session's `SessionEnd` hook sends `quit`, the daemon shuts down; the next command from any session will spawn a fresh daemon (with the desired state buffered via `last_command`).
+
 ## Development
 
 ```bash
