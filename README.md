@@ -24,6 +24,17 @@ A Claude Code plugin that drives a Govee H6004 smart bulb as a status indicator.
    /plugin install govee-claude
    ```
 
+### LAN mode (future)
+
+LAN discovery is **disabled by default** because the H6004 doesn't expose Govee's LAN API. When you swap in a LAN-capable bulb (e.g. H6006), enable LAN at setup time:
+
+```bash
+GOVEE_ENABLE_LAN=1 GOVEE_API_KEY_PATH="$PWD/govee-api-key.txt" \
+  GOVEE_SKU=H6006 uv run python scripts/setup.py
+```
+
+Setup will run UDP discovery on your primary `/24` and fall back to cloud if no response.
+
 ## Architecture
 
 See [`docs/superpowers/specs/2026-05-09-govee-claude-plugin-design.md`](docs/superpowers/specs/2026-05-09-govee-claude-plugin-design.md).

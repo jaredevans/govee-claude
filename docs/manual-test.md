@@ -9,7 +9,7 @@ After installing the plugin in Claude Code:
      uv run python scripts/setup.py
    ```
 
-   Expected: prints `LAN unavailable; mode=cloud` (current state) or `LAN discovered at <ip>; mode=lan`. Writes `~/.claude/govee-claude/config.json`.
+   Expected: prints `LAN discovery skipped (set GOVEE_ENABLE_LAN=1 to opt in)` followed by `mode=cloud`. Writes `~/.claude/govee-claude/config.json`. LAN is disabled by default since the H6004 doesn't support it; prepend `GOVEE_ENABLE_LAN=1` once you've moved to a LAN-capable bulb.
 
 2. **Start a Claude Code session.** Bulb should not change yet (`SessionStart` only ensures the daemon is running).
 
