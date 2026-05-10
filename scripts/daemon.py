@@ -1,10 +1,15 @@
 from __future__ import annotations
 
+import fcntl
+import json as _json
 import logging
 import os
+import signal as _signal
 import socket as _socket
 import stat
+import sys
 import threading
+from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import Protocol
 
@@ -138,6 +143,133 @@ class SocketServer:
             conn.sendall((reply + "\n").encode())
         except OSError:
             log.warning("client closed before ack")
+        if cmd == "quit":
+            self.shutdown()
 
     def shutdown(self) -> None:
         self._stop.set()
+
+
+def _runtime_dir() -> Path:
+    p = os.environ.get("GOVEE_CLAUDE_RUNTIME_DIR")
+    if p:
+        return Path(p)
+    return Path.home() / ".claude" / "govee-claude"
+
+
+def _setup_logging(runtime: Path) -> None:
+    runtime.mkdir(parents=True, exist_ok=True)
+    handler = RotatingFileHandler(
+        runtime / "daemon.log", maxBytes=1_000_000, backupCount=1
+    )
+    handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
+    root = logging.getLogger()
+    root.setLevel(logging.INFO)
+    root.handlers.clear()
+    root.addHandler(handler)
+
+
+def _acquire_singleton(pid_path: Path):
+    pid_path.parent.mkdir(parents=True, exist_ok=True)
+    fd = os.open(str(pid_path), os.O_RDWR | os.O_CREAT, 0o600)
+    try:
+        fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        os.close(fd)
+        return None
+    os.ftruncate(fd, 0)
+    os.write(fd, str(os.getpid()).encode())
+    return fd  # keep open for the process lifetime
+
+
+class _RecordingClient:
+    """Used in tests via GOVEE_CLAUDE_FAKE_BULB env var. Appends JSONL."""
+
+    def __init__(self, path: Path) -> None:
+        self.path = path
+
+    def set_rgb(self, rgb: int) -> None:
+        line = _json.dumps({"call": "set_rgb", "rgb": rgb})
+        with open(self.path, "a") as f:
+            f.write(line + "\n")
+
+
+def _build_client(config: dict):
+    fake = os.environ.get("GOVEE_CLAUDE_FAKE_BULB")
+    if fake:
+        return _RecordingClient(Path(fake))
+    if config["mode"] == "lan":
+        from govee.lan import LanClient
+        return LanClient(device_ip=config["device_ip"])
+    if config["mode"] == "cloud":
+        from govee.cloud import CloudClient
+        api_key = Path(config["api_key_path"]).read_text().strip()
+        return CloudClient(
+            api_key=api_key,
+            sku=config["sku"],
+            device_id=config["device_id"],
+        )
+    raise SystemExit(f"unknown mode in config: {config['mode']!r}")
+
+
+def _resolve_period(config: dict) -> float:
+    p = float(config.get("flash_period_seconds", 6.0))
+    floor = 1.0 if config.get("mode") == "lan" else 6.0
+    if os.environ.get("GOVEE_CLAUDE_FAKE_BULB"):
+        floor = 0.0  # tests want fast period
+    return max(p, floor)
+
+
+def main() -> int:
+    runtime = _runtime_dir()
+    _setup_logging(runtime)
+    log.info("daemon starting (pid=%d)", os.getpid())
+
+    pid_path = runtime / "daemon.pid"
+    lock_fd = _acquire_singleton(pid_path)
+    if lock_fd is None:
+        log.error("another daemon already running — exiting")
+        return 2
+
+    cfg_path = runtime / "config.json"
+    if not cfg_path.exists():
+        log.error("no config at %s — run setup.py first", cfg_path)
+        return 3
+    config = _json.loads(cfg_path.read_text())
+
+    client = _build_client(config)
+    daemon = Daemon(
+        client=client,
+        period_seconds=_resolve_period(config),
+        colors={k: int(v.lstrip("#"), 16) for k, v in config["colors"].items()},
+    )
+
+    last_cmd_path = runtime / "last_command"
+    if last_cmd_path.exists():
+        cmd = last_cmd_path.read_text().strip()
+        log.info("applying buffered last_command=%r", cmd)
+        try:
+            daemon.handle(cmd)
+        finally:
+            last_cmd_path.unlink(missing_ok=True)
+
+    server = SocketServer(daemon=daemon, sock_path=runtime / "daemon.sock")
+
+    def _shutdown(_signum, _frame):
+        log.info("signal received, shutting down")
+        server.shutdown()
+        daemon.handle("quit")
+
+    _signal.signal(_signal.SIGTERM, _shutdown)
+    _signal.signal(_signal.SIGINT, _shutdown)
+
+    try:
+        server.serve_forever()
+    finally:
+        log.info("daemon exiting")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    sys.exit(main())
