@@ -2,6 +2,8 @@
 
 After installing the plugin in Claude Code:
 
+> **Note:** If you installed before the blue/aqua flash change, re-run step 1 once — your existing `~/.claude/govee-claude/config.json` is missing the `aqua` color.
+
 1. **Run setup**
 
    ```bash
@@ -13,7 +15,7 @@ After installing the plugin in Claude Code:
 
 2. **Start a Claude Code session.** Bulb should not change yet (`SessionStart` only ensures the daemon is running).
 
-3. **Submit a prompt.** Bulb goes solid blue while Claude is working.
+3. **Submit a prompt.** Bulb alternates blue ↔ aqua (1 s each) while Claude is working.
 
 4. **Wait for Claude to finish.** Bulb goes solid yellow.
 

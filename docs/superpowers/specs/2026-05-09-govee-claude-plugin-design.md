@@ -8,7 +8,7 @@
 
 A Claude Code plugin that drives a Govee bulb as a status indicator:
 
-- **Claude is working** (between `UserPromptSubmit` and `Stop`): solid blue
+- **Claude is working** (between `UserPromptSubmit` and `Stop`): alternating blue/aqua (see `2026-05-11-flash-blue-aqua-alternation-design.md`)
 - **Claude finished a turn** (`Stop`): solid yellow
 - **Claude needs attention** (`Notification`): solid red, overrides the working state
 - **Session ended** (`SessionEnd`): solid white
@@ -83,17 +83,17 @@ pyproject.toml                 # uv-managed; deps: httpx, pytest
 
 ## State machine
 
-Daemon holds one piece of state: `mode ∈ {idle, flash, yellow, red, white}`. Each command sets a single solid color; there is no worker thread. (`flash` is retained as the command name for the working state because the hook contract uses it; the daemon just sets blue once.)
+Daemon holds one piece of state: `mode ∈ {idle, flash, yellow, red, white}`. Each command sets the bulb color; there is no worker thread. (`flash` is retained as the command name for the working state because the hook contract uses it; the daemon alternates blue/aqua for 1 s each while working.)
 
 | Hook fired         | Command sent       | New mode  | Bulb shows                |
 |--------------------|--------------------|-----------|---------------------------|
 | `SessionStart`     | `ensure-running`   | unchanged | unchanged                 |
-| `UserPromptSubmit` | `flash`            | `flash`   | solid blue                |
+| `UserPromptSubmit` | `flash`            | `flash`   | alternating blue ↔ aqua   |
 | `Stop`             | `yellow`           | `yellow`  | solid yellow              |
 | `Notification`     | `red`              | `red`     | solid red                 |
 | `SessionEnd`       | `white`            | `white`   | solid white               |
 
-Notification mid-turn overwrites blue; red persists until the next `Stop` (yellow) or next `UserPromptSubmit` (blue resumes).
+Notification mid-turn overwrites the flash; red persists until the next `Stop` (yellow) or next `UserPromptSubmit` (flash resumes).
 
 ## Setup & mode detection
 
