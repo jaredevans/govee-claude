@@ -53,9 +53,9 @@ def test_full_session_flow(tmp_path):
             assert r.returncode == 0
 
         send("flash")
-        # Give the worker time to emit at least one full cycle: blue + aqua.
-        # FLASH_HALF_PERIOD is 1.0 s, so 2.5 s is enough for >=2 emissions.
-        time.sleep(2.5)
+        # Give the worker time to emit at least one full cycle: blue (2.0 s) + aqua (0.5 s).
+        # 3.0 s leaves a small margin past the 2.5 s cycle for >=2 emissions.
+        time.sleep(3.0)
         send("yellow")
         time.sleep(0.1)
         send("red")

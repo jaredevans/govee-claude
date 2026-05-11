@@ -16,7 +16,8 @@ from typing import Protocol
 
 log = logging.getLogger("govee-claude.daemon")
 
-FLASH_HALF_PERIOD = 1.0  # seconds each color is held in the flash alternation
+FLASH_BLUE_DURATION = 2.0  # seconds blue is held each cycle
+FLASH_AQUA_DURATION = 0.5  # seconds aqua is held each cycle
 
 
 class _SupportsSetRgb(Protocol):
@@ -59,16 +60,16 @@ class Daemon:
     def _stop_flash(self) -> None:
         if self._worker and self._worker.is_alive():
             self._stop_event.set()
-            self._worker.join(timeout=FLASH_HALF_PERIOD + 0.1)
+            self._worker.join(timeout=max(FLASH_BLUE_DURATION, FLASH_AQUA_DURATION) + 0.1)
         self._worker = None
 
     def _flash_loop(self) -> None:
-        toggle = 0
         while True:
-            color_name = "blue" if toggle == 0 else "aqua"
-            self._safe_set(self.colors[color_name])
-            toggle ^= 1
-            if self._stop_event.wait(timeout=FLASH_HALF_PERIOD):
+            self._safe_set(self.colors["blue"])
+            if self._stop_event.wait(timeout=FLASH_BLUE_DURATION):
+                return
+            self._safe_set(self.colors["aqua"])
+            if self._stop_event.wait(timeout=FLASH_AQUA_DURATION):
                 return
 
     def _safe_set(self, rgb: int) -> None:

@@ -15,7 +15,7 @@ After installing the plugin in Claude Code:
 
 2. **Start a Claude Code session.** Bulb should not change yet (`SessionStart` only ensures the daemon is running).
 
-3. **Submit a prompt.** Bulb alternates blue ↔ aqua (1 s each) while Claude is working.
+3. **Submit a prompt.** Bulb shows blue for 2 s, then aqua for 0.5 s, repeating while Claude is working.
 
 4. **Wait for Claude to finish.** Bulb goes solid yellow.
 

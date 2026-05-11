@@ -18,8 +18,9 @@ COLORS = {
 
 @pytest.fixture(autouse=True)
 def _fast_flash(monkeypatch):
-    """Shrink the flash half-period so tests don't wait whole seconds."""
-    monkeypatch.setattr(daemon_mod, "FLASH_HALF_PERIOD", 0.01)
+    """Shrink both half-periods so tests don't wait whole seconds."""
+    monkeypatch.setattr(daemon_mod, "FLASH_BLUE_DURATION", 0.01)
+    monkeypatch.setattr(daemon_mod, "FLASH_AQUA_DURATION", 0.01)
 
 
 def make_daemon():
