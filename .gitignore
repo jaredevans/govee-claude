@@ -17,3 +17,6 @@ __pycache__/
 
 # Secrets — never commit
 govee-api-key.txt
+
+# Per-user Claude Code state
+.claude/
