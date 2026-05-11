@@ -83,7 +83,7 @@ pyproject.toml                 # uv-managed; deps: httpx, pytest
 
 ## State machine
 
-Daemon holds one piece of state: `mode ∈ {idle, flash, yellow, red, white}`. Each command sets the bulb color; there is no worker thread. (`flash` is retained as the command name for the working state because the hook contract uses it; the daemon alternates blue/aqua for 1 s each while working.)
+Daemon holds one piece of state: `mode ∈ {idle, flash, yellow, red, white}`. Solid-color commands set the bulb once. The `flash` command spawns a background worker thread that alternates blue/aqua, holding each color for 1 s; any subsequent solid-color or quit command stops the worker. See `2026-05-11-flash-blue-aqua-alternation-design.md` for the worker design.
 
 | Hook fired         | Command sent       | New mode  | Bulb shows                |
 |--------------------|--------------------|-----------|---------------------------|
