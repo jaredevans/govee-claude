@@ -2,9 +2,9 @@
 
 A Claude Code plugin that drives a Govee H6004 smart bulb as a status indicator.
 
-- **Working** (between `UserPromptSubmit` and `Stop`): blue for 2 s, then aqua for 0.5 s, repeating
+- **Working** (between `UserPromptSubmit`/`PostToolUse` and `Stop`): blue for 2 s, then aqua for 0.5 s, repeating
 - **Idle / done** (`Stop`): solid yellow
-- **Needs attention** (`Notification`): solid red
+- **Needs attention** (`Notification`): solid red — clears back to flash on the next `PostToolUse`, so approving a permission prompt visibly resumes the working state
 - **Session ended** (`SessionEnd`): solid white
 
 ## Install
