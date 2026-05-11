@@ -150,6 +150,9 @@ def test_set_rgb_failure_does_not_crash_flash_loop():
     d.client.fail_next = 2
     try:
         d.handle("flash")
-        assert _wait_for(lambda: len(d.client.calls) >= 1, timeout=2.0)
+        assert _wait_for(
+            lambda: COLORS["blue"] in d.client.calls and COLORS["aqua"] in d.client.calls,
+            timeout=2.0,
+        )
     finally:
         d.handle("quit")

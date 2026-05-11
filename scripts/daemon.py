@@ -59,7 +59,7 @@ class Daemon:
     def _stop_flash(self) -> None:
         if self._worker and self._worker.is_alive():
             self._stop_event.set()
-            self._worker.join(timeout=0.2)
+            self._worker.join(timeout=FLASH_HALF_PERIOD + 0.1)
         self._worker = None
 
     def _flash_loop(self) -> None:
