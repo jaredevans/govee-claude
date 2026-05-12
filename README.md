@@ -4,6 +4,8 @@ A Claude Code plugin that drives a Govee H6006 smart bulb as an ambient status i
 
 <a href="https://a.co/d/02L9Aotl"><img src="govee-bulb.jpg" alt="Govee H6006 bulb" width="288"></a>
 
+*Click image to go to Amazon page*
+
 ## States
 
 | Bulb | When | Hook |
