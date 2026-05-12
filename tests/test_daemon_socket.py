@@ -52,7 +52,7 @@ def test_server_responds_to_yellow(server_setup):
 
 def test_server_handles_unknown_command(server_setup):
     daemon, sock = server_setup
-    reply = send(sock, "purple")
+    reply = send(sock, "bogus")
     assert reply.startswith("err")
 
 
