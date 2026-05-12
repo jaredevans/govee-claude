@@ -3,8 +3,9 @@
 A Claude Code plugin that drives a Govee H6004 smart bulb as a status indicator.
 
 - **Working** (between `UserPromptSubmit`/`PostToolUse` and `Stop`): blue for 2 s, then aqua for 0.5 s, repeating
-- **Idle / done** (`Stop`): solid yellow
-- **Needs attention** (`Notification`): solid red — clears back to flash on the next `PostToolUse`, so approving a permission prompt visibly resumes the working state
+- **Done** (`Stop`): solid yellow
+- **Permission prompt** (`Notification`, "Claude needs your permission to use X"): solid red — clears back to flash on the next `PostToolUse`, so approving visibly resumes the working state
+- **Idle waiting on you** (`Notification`, "Claude is waiting for your input", fires ~60 s after `Stop`): solid purple — clears to flash on the next `UserPromptSubmit`
 - **Session ended** (`SessionEnd`): solid white
 
 ## Install
@@ -23,6 +24,14 @@ A Claude Code plugin that drives a Govee H6004 smart bulb as a status indicator.
    /plugin marketplace add /path/to/govee-claude
    /plugin install govee-claude
    ```
+
+### Upgrading from a pre-purple install
+
+If `colors.purple` is missing from your `~/.claude/govee-claude/config.json` (you installed before the red/purple split), the daemon falls back to `#8000FF`. Re-run setup once to make the value explicit and override-able:
+
+```bash
+GOVEE_API_KEY_PATH="$PWD/govee-api-key.txt" uv run python scripts/setup.py
+```
 
 ### LAN mode (future)
 

@@ -93,6 +93,8 @@ Daemon holds one piece of state: `mode ∈ {idle, flash, yellow, red, white}`. S
 | `Notification`     | `red`              | `red`     | solid red                 |
 | `SessionEnd`       | `white`            | `white`   | solid white               |
 
+> **Update (2026-05-11):** The single `Notification` → red mapping has been split into red (permission needed) and purple (idle waiting). See `2026-05-11-thinking-vs-waiting-color-design.md` for the classifier and `notify` command.
+
 Notification mid-turn overwrites the flash; red persists until the next `Stop` (yellow) or next `UserPromptSubmit` (flash resumes).
 
 ## Setup & mode detection
