@@ -131,6 +131,7 @@ def write_config(path: Path, *, mode: str, device_ip: str | None,
             "blue":   "#0000FF",
             "aqua":   "#00FFFF",
             "white":  "#FFFFFF",
+            "purple": "#8000FF",
         },
     }
     path.parent.mkdir(parents=True, exist_ok=True)

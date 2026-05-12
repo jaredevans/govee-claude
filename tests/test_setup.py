@@ -69,6 +69,7 @@ def test_write_config_lan(tmp_path):
     assert cfg["device_ip"] == "10.0.0.42"
     assert cfg["colors"]["blue"] == "#0000FF"
     assert cfg["colors"]["aqua"] == "#00FFFF"
+    assert cfg["colors"]["purple"] == "#8000FF"
 
 
 def test_write_config_cloud(tmp_path):
@@ -80,3 +81,4 @@ def test_write_config_cloud(tmp_path):
     cfg = json.loads((tmp_path / "cfg.json").read_text())
     assert cfg["mode"] == "cloud"
     assert cfg["colors"]["aqua"] == "#00FFFF"
+    assert cfg["colors"]["purple"] == "#8000FF"
