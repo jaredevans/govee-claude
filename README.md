@@ -2,6 +2,8 @@
 
 A Claude Code plugin that drives a Govee H6006 smart bulb as an ambient status indicator. The bulb changes color in response to Claude Code hook events — you can tell what Claude is doing without looking at the terminal.
 
+[![Govee H6006 bulb](govee-bulb.jpg)](https://a.co/d/02L9Aotl)
+
 ## States
 
 | Bulb | When | Hook |
