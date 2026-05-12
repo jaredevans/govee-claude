@@ -3,7 +3,7 @@
 
 Usage: send.py <command>
 
-Commands: ensure-running | flash | yellow | red | white | quit
+Commands: ensure-running | flash | yellow | red | purple | white | quit | notify
 """
 from __future__ import annotations
 
