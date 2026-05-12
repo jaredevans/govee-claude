@@ -6,7 +6,7 @@ import pytest
 from govee.cloud import CloudClient, CloudAuthError, CloudRateLimited
 
 
-def make_client(handler, api_key="test-key", sku="H6004",
+def make_client(handler, api_key="test-key", sku="H6006",
                 device_id="DE:AD:BE:EF:CA:FE:00:01"):
     transport = httpx.MockTransport(handler)
     http = httpx.Client(transport=transport, timeout=5.0)
@@ -29,7 +29,7 @@ def test_set_rgb_sends_correct_request():
     assert req.url.path == "/router/api/v1/device/control"
     assert req.headers["Govee-API-Key"] == "test-key"
     body = json.loads(req.content)
-    assert body["payload"]["sku"] == "H6004"
+    assert body["payload"]["sku"] == "H6006"
     assert body["payload"]["device"] == "DE:AD:BE:EF:CA:FE:00:01"
     assert body["payload"]["capability"]["instance"] == "colorRgb"
     assert body["payload"]["capability"]["value"] == 0xFF0000
@@ -87,9 +87,9 @@ def test_list_devices_returns_payload():
         assert request.url.path == "/router/api/v1/user/devices"
         return httpx.Response(200, json={
             "code": 200,
-            "data": [{"sku": "H6004", "device": "DE:AD:BE:EF:CA:FE:00:01"}],
+            "data": [{"sku": "H6006", "device": "DE:AD:BE:EF:CA:FE:00:01"}],
         })
 
     c = make_client(handler)
     devices = c.list_devices()
-    assert devices == [{"sku": "H6004", "device": "DE:AD:BE:EF:CA:FE:00:01"}]
+    assert devices == [{"sku": "H6006", "device": "DE:AD:BE:EF:CA:FE:00:01"}]

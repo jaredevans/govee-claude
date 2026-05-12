@@ -12,7 +12,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 DAEMON_PATH = REPO_ROOT / "scripts" / "daemon.py"
 
 
-def write_config(runtime_dir: Path, sku="H6004", device_id="DE:AD:BE:EF:CA:FE:00:01"):
+def write_config(runtime_dir: Path, sku="H6006", device_id="DE:AD:BE:EF:CA:FE:00:01"):
     cfg = {
         "mode": "fake",
         "device_ip": None,

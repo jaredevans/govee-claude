@@ -7,7 +7,7 @@
     {
       "name": "govee-claude",
       "source": "./",
-      "description": "Drives a Govee H6004 bulb as a status indicator for Claude Code (yellow on Stop, red on Notification, white on SessionEnd, blue while working)."
+      "description": "Drives a Govee H6006 bulb as a status indicator for Claude Code (blue/aqua flash while working, yellow when done, red on permission prompt, purple on idle, white on session end)."
     }
   ]
 }

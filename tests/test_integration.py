@@ -18,7 +18,7 @@ def _write_config(rt: Path):
         "mode": "fake",
         "device_ip": None,
         "device_id": "DE:AD",
-        "sku": "H6004",
+        "sku": "H6006",
         "api_key_path": str(rt / "fake-key.txt"),
         "colors": {
             "yellow": "#FFFF00", "red": "#FF0000",

@@ -2,7 +2,7 @@
   "mode": "cloud",
   "device_ip": null,
   "device_id": "REPLACE_ME",
-  "sku": "H6004",
+  "sku": "H6006",
   "api_key_path": "REPLACE_ME",
   "colors": {
     "yellow": "#FFFF00",
