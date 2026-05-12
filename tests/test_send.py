@@ -176,3 +176,57 @@ def test_send_ensure_running_spawns_daemon(tmp_path, monkeypatch):
     while time.time() < deadline and not fake_log.exists():
         time.sleep(0.05)
     assert fake_log.exists()
+
+
+@pytest.mark.integration
+def test_send_notify_dispatches_purple_for_waiting(tmp_path):
+    log: list[str] = []
+    fake_daemon(tmp_path / "daemon.sock", log)
+    time.sleep(0.05)
+    env = os.environ.copy()
+    env["GOVEE_CLAUDE_RUNTIME_DIR"] = str(tmp_path)
+    r = subprocess.run(
+        [sys.executable, str(SEND_PATH), "notify"],
+        env=env,
+        input=b'{"message": "Claude is waiting for your input"}',
+        capture_output=True,
+        timeout=5,
+    )
+    assert r.returncode == 0
+    assert log == ["purple"]
+
+
+@pytest.mark.integration
+def test_send_notify_dispatches_red_for_permission(tmp_path):
+    log: list[str] = []
+    fake_daemon(tmp_path / "daemon.sock", log)
+    time.sleep(0.05)
+    env = os.environ.copy()
+    env["GOVEE_CLAUDE_RUNTIME_DIR"] = str(tmp_path)
+    r = subprocess.run(
+        [sys.executable, str(SEND_PATH), "notify"],
+        env=env,
+        input=b'{"message": "Claude needs your permission to use Bash"}',
+        capture_output=True,
+        timeout=5,
+    )
+    assert r.returncode == 0
+    assert log == ["red"]
+
+
+@pytest.mark.integration
+def test_send_notify_with_no_stdin_falls_back_to_red(tmp_path):
+    log: list[str] = []
+    fake_daemon(tmp_path / "daemon.sock", log)
+    time.sleep(0.05)
+    env = os.environ.copy()
+    env["GOVEE_CLAUDE_RUNTIME_DIR"] = str(tmp_path)
+    r = subprocess.run(
+        [sys.executable, str(SEND_PATH), "notify"],
+        env=env,
+        stdin=subprocess.DEVNULL,
+        capture_output=True,
+        timeout=5,
+    )
+    assert r.returncode == 0
+    assert log == ["red"]

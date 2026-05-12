@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import os
+import select
 import socket
 import subprocess
 import sys
@@ -36,7 +37,25 @@ def classify_notification(stdin_bytes: bytes) -> str:
     return "red"
 
 
-VALID = {"ensure-running", "flash", "yellow", "red", "white", "quit"}
+def _read_stdin_capped(timeout: float = 1.0, max_bytes: int = 8192) -> bytes:
+    """Read up to max_bytes from stdin, waiting at most timeout seconds.
+
+    Returns b'' when stdin is not readable within the timeout, or when the
+    read raises OSError. Never raises."""
+    try:
+        fd = sys.stdin.fileno()
+    except (AttributeError, ValueError, OSError):
+        return b""
+    ready, _, _ = select.select([fd], [], [], timeout)
+    if not ready:
+        return b""
+    try:
+        return os.read(fd, max_bytes)
+    except OSError:
+        return b""
+
+
+VALID = {"ensure-running", "flash", "yellow", "red", "purple", "white", "quit", "notify"}
 
 
 def runtime_dir() -> Path:
@@ -97,6 +116,8 @@ def main(argv: list[str]) -> int:
         hook_log(rt, f"bad invocation: {argv!r}")
         return 0  # never break Claude
     cmd = argv[1]
+    if cmd == "notify":
+        cmd = classify_notification(_read_stdin_capped())
     sock = rt / "daemon.sock"
 
     try:
