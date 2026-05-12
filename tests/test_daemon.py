@@ -13,6 +13,7 @@ COLORS = {
     "white":  0xFFFFFF,
     "blue":   0x0000FF,
     "aqua":   0x00FFFF,
+    "purple": 0x8000FF,
 }
 
 
@@ -61,6 +62,13 @@ def test_white_sets_solid_white():
     assert d.client.calls == [COLORS["white"]]
 
 
+def test_purple_sets_solid_purple():
+    d = make_daemon()
+    d.handle("purple")
+    assert d.mode == "purple"
+    assert d.client.calls == [COLORS["purple"]]
+
+
 def test_flash_alternates_blue_and_aqua():
     d = make_daemon()
     try:
@@ -105,6 +113,18 @@ def test_flash_then_white_stops_alternation_cleanly():
     assert final[-1] == COLORS["white"]
     time.sleep(0.05)
     assert d.client.snapshot() == final
+
+
+def test_flash_then_purple_stops_alternation_cleanly():
+    d = make_daemon()
+    d.handle("flash")
+    assert _wait_for(lambda: len(d.client.calls) >= 4)
+    d.handle("purple")
+    final = d.client.snapshot()
+    assert final[-1] == COLORS["purple"]
+    time.sleep(0.05)
+    assert d.client.snapshot() == final
+    assert d.mode == "purple"
 
 
 def test_red_then_flash_then_yellow_ends_yellow():

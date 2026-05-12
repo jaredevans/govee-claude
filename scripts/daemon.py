@@ -24,7 +24,7 @@ class _SupportsSetRgb(Protocol):
     def set_rgb(self, rgb: int) -> None: ...
 
 
-VALID_MODES = {"idle", "flash", "yellow", "red", "white"}
+VALID_MODES = {"idle", "flash", "yellow", "red", "white", "purple"}
 
 
 class Daemon:
@@ -38,7 +38,7 @@ class Daemon:
         self._worker: threading.Thread | None = None
 
     def handle(self, cmd: str) -> str:
-        if cmd in ("yellow", "red", "white"):
+        if cmd in ("yellow", "red", "white", "purple"):
             self._stop_flash()
             self.mode = cmd
             self._safe_set(self.colors[cmd])
@@ -222,10 +222,9 @@ def main() -> int:
     config = _json.loads(cfg_path.read_text())
 
     client = _build_client(config)
-    daemon = Daemon(
-        client=client,
-        colors={k: int(v.lstrip("#"), 16) for k, v in config["colors"].items()},
-    )
+    colors = {k: int(v.lstrip("#"), 16) for k, v in config["colors"].items()}
+    colors.setdefault("purple", 0x8000FF)
+    daemon = Daemon(client=client, colors=colors)
 
     last_cmd_path = runtime / "last_command"
     if last_cmd_path.exists():

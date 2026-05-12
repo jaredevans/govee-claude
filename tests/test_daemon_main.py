@@ -122,3 +122,26 @@ def test_daemon_picks_up_last_command_on_start(tmp_path):
     finally:
         send(runtime / "daemon.sock", "quit")
         p.wait(timeout=3)
+
+
+@pytest.mark.integration
+def test_daemon_replays_purple_with_default_color(tmp_path):
+    """Config without colors.purple should still produce a purple set_rgb when
+    last_command='purple' (upgrade path: hook ran new code before config refresh)."""
+    runtime = tmp_path / "rt"
+    runtime.mkdir()
+    write_config(runtime)  # writes config without "purple" key
+    (runtime / "last_command").write_text("purple")
+    recording = tmp_path / "recording.jsonl"
+
+    p = start_daemon(runtime, recording)
+    try:
+        send(runtime / "daemon.sock", "yellow")  # waits until socket is up
+        time.sleep(0.05)
+        lines = recording.read_text().splitlines()
+        purple_seen = any("8388863" in line for line in lines)
+        assert purple_seen
+        assert not (runtime / "last_command").exists()
+    finally:
+        send(runtime / "daemon.sock", "quit")
+        p.wait(timeout=3)
