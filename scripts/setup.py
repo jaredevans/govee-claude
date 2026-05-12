@@ -144,7 +144,7 @@ def main() -> int:
                    Path.home() / ".claude" / "govee-claude"))
     runtime.mkdir(parents=True, exist_ok=True)
 
-    sku = os.environ.get("GOVEE_SKU", "H6004")
+    sku = os.environ.get("GOVEE_SKU", "H6006")
     device_id = os.environ.get("GOVEE_DEVICE_ID")
     api_key_path = os.environ.get("GOVEE_API_KEY_PATH")
     if not device_id or not api_key_path:
@@ -166,16 +166,13 @@ def main() -> int:
         device_id = match["device"]
 
     print(f"resolving best mode for sku={sku} device={device_id} ...")
-    if os.environ.get("GOVEE_ENABLE_LAN") == "1":
-        lan_ip = lan_discover(sku, device_id)
-        if lan_ip:
-            write_config(runtime / "config.json", mode="lan", device_ip=lan_ip,
-                         device_id=device_id, sku=sku, api_key_path=api_key_path)
-            print(f"LAN discovered at {lan_ip}; mode=lan")
-            return 0
-        print("GOVEE_ENABLE_LAN=1 set but no device responded; falling back to cloud")
-    else:
-        print("LAN discovery skipped (set GOVEE_ENABLE_LAN=1 to opt in)")
+    lan_ip = lan_discover(sku, device_id)
+    if lan_ip:
+        write_config(runtime / "config.json", mode="lan", device_ip=lan_ip,
+                     device_id=device_id, sku=sku, api_key_path=api_key_path)
+        print(f"LAN discovered at {lan_ip}; mode=lan")
+        return 0
+    print("no LAN response; falling back to cloud")
 
     api_key = Path(api_key_path).read_text().strip()
     if not validate_cloud(api_key, sku, device_id):
