@@ -12,6 +12,45 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 SEND_PATH = REPO_ROOT / "scripts" / "send.py"
 
 
+import send  # noqa: E402 — scripts/ is on sys.path via conftest.py
+
+
+def test_classify_returns_purple_for_waiting_message():
+    data = b'{"message": "Claude is waiting for your input"}'
+    assert send.classify_notification(data) == "purple"
+
+
+def test_classify_returns_red_for_permission_message():
+    data = b'{"message": "Claude needs your permission to use Bash"}'
+    assert send.classify_notification(data) == "red"
+
+
+def test_classify_returns_red_for_empty_bytes():
+    assert send.classify_notification(b"") == "red"
+
+
+def test_classify_returns_red_for_malformed_json():
+    assert send.classify_notification(b"not json") == "red"
+
+
+def test_classify_returns_red_when_message_field_missing():
+    assert send.classify_notification(b'{"other": "field"}') == "red"
+
+
+def test_classify_returns_red_for_unknown_wording():
+    data = b'{"message": "something else entirely"}'
+    assert send.classify_notification(data) == "red"
+
+
+def test_classify_is_case_insensitive_on_waiting():
+    data = b'{"message": "Claude IS WAITING FOR YOUR INPUT"}'
+    assert send.classify_notification(data) == "purple"
+
+
+def test_classify_handles_non_dict_json():
+    assert send.classify_notification(b'["not", "a", "dict"]') == "red"
+
+
 def fake_daemon(sock_path: Path, log: list[str]):
     """Tiny one-shot AF_UNIX server that records the command and replies 'ok'."""
     sock_path.parent.mkdir(parents=True, exist_ok=True)

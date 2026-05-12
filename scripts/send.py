@@ -7,12 +7,34 @@ Commands: ensure-running | flash | yellow | red | white | quit
 """
 from __future__ import annotations
 
+import json
 import os
 import socket
 import subprocess
 import sys
 import traceback
 from pathlib import Path
+
+
+def classify_notification(stdin_bytes: bytes) -> str:
+    """Return 'red' or 'purple' based on the Notification hook's message text.
+
+    Falls back to 'red' on any parsing error so we never regress the prior
+    single-color Notification behavior.
+    """
+    try:
+        data = json.loads(stdin_bytes)
+    except (ValueError, TypeError):
+        return "red"
+    if not isinstance(data, dict):
+        return "red"
+    msg = (data.get("message") or "").lower()
+    if "waiting for your input" in msg:
+        return "purple"
+    if "permission" in msg:
+        return "red"
+    return "red"
+
 
 VALID = {"ensure-running", "flash", "yellow", "red", "white", "quit"}
 
